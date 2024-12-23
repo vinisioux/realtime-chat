@@ -1,0 +1,45 @@
+services:
+  webchat-server:
+    container_name: webchat-server
+    restart: unless-stopped
+    image: webchat-server:1.0.0
+    build:
+      context: server
+      dockerfile: Dockerfile
+    ports:
+      - 5000:5000
+    networks:
+      - shared-network
+    environment:
+      - MONGO_URI=mongodb://webchat-mongodb:27017/webchat
+    depends_on:
+      - webchat-mongodb
+
+  webchat-mongodb:
+    container_name: webchat-mongodb
+    image: mongo
+    restart: unless-stopped
+    volumes:
+      - ~/mongo:/data/db
+    ports:
+      - 27017:27017
+    networks:
+      - shared-network
+
+  webchat-client:
+    container_name: webchat-client
+    restart: unless-stopped
+    image: webchat-client:1.0.0
+    build:
+      context: client
+      dockerfile: Dockerfile
+    ports:
+      - 5173:5173
+    networks:
+      - shared-network
+    depends_on:
+      - webchat-server
+
+networks:
+  shared-network:
+    driver: bridge
